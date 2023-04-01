@@ -22,7 +22,8 @@ OUTPUT_DIR = f"{Assignment3Dir}\\documentation\\data"
 #     astar.a_star(board_state)
 
 def load_n_puzzle_dataset(num_boards: int, board_size: int):
-    
+    # Make sure to swap Bs and 0s in the board
+    pass
 
 
 # Load the dataset (Replace this with your own dataset loading function)

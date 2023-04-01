@@ -22,7 +22,7 @@ OUTPUT_DIR = f"{Assignment3Dir}\\documentation\\data"
 #             ["3x3x2.csv", "Sliding", "True"] + astar.a_star(board_state))
 
 
-with open(f"{OUTPUT_DIR}\\data_03x03_1000_tests.csv", "w", newline="") as data_file:
+with open(f"{OUTPUT_DIR}\\data_04x04_1000_tests.csv", "w", newline="") as data_file:
     heur = "Sliding"
     weight = "True"
     data_writer = csv.writer(data_file)
@@ -30,8 +30,9 @@ with open(f"{OUTPUT_DIR}\\data_03x03_1000_tests.csv", "w", newline="") as data_f
                         "Moves Required", "Solution Cost", "Estimated Branching Factor", "Search Time"])
     for i in range(1000):
         new_board = Initialization(
-            f"{BOARDS_DIR}\\03x03_board_{i}.csv", 3, heur, weight)
+            f"{BOARDS_DIR}\\04x04_board_{i}.csv", 4, heur, weight)
+        print(new_board.goal)
         board_state = BoardState(
             new_board.board, new_board.goal, new_board.heuristic_type, new_board.weighted)
         data_writer.writerow(
-            [f"03x03_board_{i}.csv", heur, weight] + astar.a_star(board_state))
+            [f"04x04_board_{i}.csv", heur, weight] + astar.a_star(board_state))
