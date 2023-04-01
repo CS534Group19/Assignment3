@@ -1,5 +1,5 @@
 class BoardState():
-    def __init__(self, board_array, goal_array, heuristic_type: str, weighted: str, move_cost: int = 0, parent=None, move_title="", effort=0, node_depth=0):
+    def __init__(self, board_array, goal, heuristic_type: str, weighted: str, move_cost: int = 0, parent=None, move_title="", effort=0, node_depth=0):
         """
         ### Parameters
         - board_array: 2D representation of the board
@@ -12,9 +12,9 @@ class BoardState():
         """
         self.board_array = board_array
         self.side_length = len(self.board_array)
-        self.goal_array = goal_array
         self.heuristic_type = heuristic_type
         self.weighted = weighted
+        self.goal_array = goal
 
         self.g = move_cost  # g
         self.h = self.getHVal(self.heuristic_type)  # h
