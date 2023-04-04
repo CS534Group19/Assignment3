@@ -1,7 +1,11 @@
 import csv
+import numpy as np
+import tensorflow as tf
+import pickle
+
 
 class Initialization():
-    def __init__(self, csv_file, sides, heuristic, weighted):
+    def __init__(self, csv_file, sides, heuristic, weighted, model, scaler):
         """
         ### Parameters
         - csv_file: the file path to the csv file containing the board
@@ -16,6 +20,9 @@ class Initialization():
         self.side_length = len(self.board)
         self.heuristic_type = heuristic
         self.weighted = weighted
+        self.blanks = self.find_blanks()
+        self.model = model
+        self.scaler = scaler
         self.front_goal = self.find_goal_state_front()
         self.back_goal = self.find_goal_state_back()
         self.goal = self.calc_best_goal(self.heuristic_type)
@@ -75,14 +82,22 @@ class Initialization():
         zero_list = sorted_board[0: end_zeroes + 1]
         sorted_board = sorted_board[end_zeroes + 1:] + zero_list
         return self.make_2D(sorted_board)
-    
+
     def find_goal_state_front(self):
         """Returns a 2D array created from a re-arranged sorted 1D array with all zeros in the top left
         """
         sorted_board = sorted(self.create_1D_board())
         return self.make_2D(sorted_board)
-    
 
+    def find_blanks(self) -> int:
+        """Returns the number of blanks in the board
+        """
+        blanks = 0
+        for row in self.board:
+            for value in row:
+                if value == 0:
+                    blanks += 1
+        return blanks
 
     def calc_manhattan_distance_for_value(self, value: int, value_x, value_y, goal_board) -> int:
         if value == 0:
@@ -105,35 +120,56 @@ class Initialization():
                     board_array[row][col], row, col, goal_board)
         return total
 
+    # def calc_euclidean_distance_for_value(self, value: int, value_x, value_y) -> int:
+    #     if value == 0:
+    #         return 0
+    #     else:
+    #         for row in range(self.side_length):
+    #             for col in range(self.side_length):
+    #                 if self.goal_array[row][col] == value:
+    #                     if self.weighted == "True":
+    #                         return (abs(value_x - row)**2 + abs(value_y - col)**2)**(1/2) * value
+    #                     else:
+    #                         return (abs(value_x - row)**2 + abs(value_y - col)**2)**(1/2)
 
-    def calc_euclidean_distance_for_value(self, value: int, value_x, value_y) -> int:
-        if value == 0:
-            return 0
-        else:
-            for row in range(self.side_length):
-                for col in range(self.side_length):
-                    if self.goal_array[row][col] == value:
-                        if self.weighted == "True":
-                            return (abs(value_x - row)**2 + abs(value_y - col)**2)**(1/2) * value
-                        else:
-                            return (abs(value_x - row)**2 + abs(value_y - col)**2)**(1/2)
+    # def calc_total_euclidean_for_board(self, board_array) -> int:
+    #     total = 0
+    #     for row in range(self.side_length):
+    #         for col in range(self.side_length):
+    #             total += self.calc_euclidean_distance_for_value(
+    #                 board_array[row][col], row, col)
+    #     return total
 
-    def calc_total_euclidean_for_board(self, board_array) -> int:
-        total = 0
-        for row in range(self.side_length):
-            for col in range(self.side_length):
-                total += self.calc_euclidean_distance_for_value(
-                    board_array[row][col], row, col)
-        return total
+    def flatten(self, board):
+        # Flatten the boards
+        board_array = [item for row in board for item in row]
+        return board_array
+
+
+    def calc_nn_heuristic_for_board(self, board, dimensions, blanks, model, scaler):
+        # Preprocess the board
+        # Normalize
+        board = self.flatten(board)
+        board_array = np.array(board).astype(np.float32) / (len(board)-1)
+
+        # Preprocess dimensions and blanks
+        dimensions_array = scaler.transform(
+            np.array([dimensions]).reshape(-1, 1))
+        blanks_array = scaler.transform(np.array([blanks]).reshape(-1, 1))
+
+        # Predict the Manhattan distance using the model
+        manhattan_distance_estimate = model.predict(
+            [board_array, dimensions_array, blanks_array])[0][0]
+
+        return manhattan_distance_estimate
 
     def getHVal(self, heuristic_type: str, goal_board) -> int:
         if heuristic_type == "Sliding":
             return self.calc_total_manhattan_for_board(self.board, goal_board)
-        elif heuristic_type == "Greedy":
+        elif heuristic_type == "NN":
             # TODO: Use NN to determine heuristic
-            return self.calc_total_euclidean_for_board(self.board_array)
+            return self.calc_nn_heuristic_for_board(self.board, self.side_length, self.blanks, self.model, self.scaler)
 
-    
     def calc_best_goal(self, heuristic_type: str):
         back_h = self.getHVal(heuristic_type, self.back_goal)
         front_h = self.getHVal(heuristic_type, self.front_goal)

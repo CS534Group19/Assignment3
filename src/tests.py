@@ -4,8 +4,12 @@ from initialization import Initialization
 import os
 import csv
 
+import numpy as np
+import tensorflow as tf
+import pickle
+
 Assignment3Dir = os.path.normpath(os.getcwd() + os.sep + os.pardir)
-BOARDS_DIR = f"{Assignment3Dir}\\documentation\\tagged_boards"
+BOARDS_DIR = f"{Assignment3Dir}\\documentation\\3Boards"
 OUTPUT_DIR = f"{Assignment3Dir}\\documentation\\data"
 
 # 10 runs of 3x3x2.csv with sliding heuristic and weighted
@@ -21,18 +25,21 @@ OUTPUT_DIR = f"{Assignment3Dir}\\documentation\\data"
 #         data_writer.writerow(
 #             ["3x3x2.csv", "Sliding", "True"] + astar.a_star(board_state))
 
+model = tf.keras.models.load_model('n_puzzle_model.h5')
+with open('scaler.pkl', 'rb') as f:
+    scaler = pickle.load(f)
 
-with open(f"{OUTPUT_DIR}\\data_04x04_1000_tests.csv", "w", newline="") as data_file:
-    heur = "Sliding"
-    weight = "True"
+with open(f"{OUTPUT_DIR}\\data_03x03_1000_tests_NN.csv", "w", newline="") as data_file:
+    heur = "NN"
+    weight = "False"
     data_writer = csv.writer(data_file)
     data_writer.writerow(["File Name", "Heuristic", "Weighted", "Nodes Expanded",
                         "Moves Required", "Solution Cost", "Estimated Branching Factor", "Search Time"])
     for i in range(1000):
         new_board = Initialization(
-            f"{BOARDS_DIR}\\04x04_board_{i}.csv", 4, heur, weight)
-        print(new_board.goal)
+            f"{BOARDS_DIR}\\03x03_board_{i}.csv", 3, heur, weight, model, scaler)
+        # print(new_board.goal)
         board_state = BoardState(
-            new_board.board, new_board.goal, new_board.heuristic_type, new_board.weighted)
+            new_board.board, new_board.goal, new_board.heuristic_type, new_board.weighted, new_board.blanks, new_board.model, new_board.scaler)
         data_writer.writerow(
-            [f"04x04_board_{i}.csv", heur, weight] + astar.a_star(board_state))
+            [f"03x03_board_{i}.csv", heur, weight] + astar.a_star(board_state))
