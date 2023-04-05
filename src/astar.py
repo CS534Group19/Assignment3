@@ -24,21 +24,21 @@ def a_star(board_state):
                 moves.append(current_state.move_title)
                 current_state = current_state.parent
             moves.reverse()
-            # for move in moves:
-            #     print(move)
+            for move in moves:
+                print(move)
 
-            # print(f"\nNodes expanded: {len(closed)}")
+            print(f"\nNodes expanded: {len(closed)}")
             output_data.append(len(closed))
-            # print(f"Moves required: {len(moves)}")
+            print(f"Moves required: {len(moves)}")
             output_data.append(len(moves))
-            # print(f"Solution Cost: {effort_total}")
+            print(f"Solution Cost: {effort_total}")
             output_data.append(effort_total)
             if final_depth != 0:
-                # print(
-                #     f"Estimated branching factor {len(closed)**(1/final_depth):0.3f}")
+                print(
+                    f"Estimated branching factor {len(closed)**(1/final_depth):0.3f}")
                 output_data.append(len(closed)**(1/final_depth))
             else:
-                # print(f"Estimated branching factor undefined")
+                print(f"Estimated branching factor undefined")
                 output_data.append("undefined")
             end_time = time.perf_counter()
             print(f"\nSearch took {end_time - start_time:0.4f} seconds")

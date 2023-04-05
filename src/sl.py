@@ -53,7 +53,7 @@ print(f"Blanks: {blanks[-1]}\n")
 
 # Preprocess the dataset
 # Make all arrays into numpy arrays
-boards = np.array([np.array(board) for board in boards])
+boards = np.array(boards)
 manhattan_distances = np.array(manhattan_distances)
 dimensions = np.array(dimensions)
 blanks = np.array(blanks)
@@ -77,9 +77,9 @@ input_dimensions = tf.keras.layers.Input(shape=(1,), name="input_dimensions")
 input_blanks = tf.keras.layers.Input(shape=(1,), name="input_blanks")
 
 concat_inputs = tf.keras.layers.Concatenate()([input_board, input_dimensions, input_blanks])
-dense1 = tf.keras.layers.Dense(128, activation='relu')(concat_inputs)
-dense2 = tf.keras.layers.Dense(64, activation='relu')(dense1)
-dense3 = tf.keras.layers.Dense(32, activation='relu')(dense2)
+dense1 = tf.keras.layers.Dense(64, activation='relu')(concat_inputs)
+dense2 = tf.keras.layers.Dense(32, activation='relu')(dense1)
+dense3 = tf.keras.layers.Dense(16, activation='relu')(dense2)
 output = tf.keras.layers.Dense(1, activation='linear')(dense3)
 
 model = tf.keras.models.Model(inputs=[input_board, input_dimensions, input_blanks], outputs=output)

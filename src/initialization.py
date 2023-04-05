@@ -150,12 +150,17 @@ class Initialization():
         # Preprocess the board
         # Normalize
         board = self.flatten(board)
-        board_array = np.array(board).astype(np.float32) / (len(board)-1)
+        print(board)
+        board_array = np.array([board]).astype(np.float32) / (len(board)-1)
 
         # Preprocess dimensions and blanks
         dimensions_array = scaler.transform(
             np.array([dimensions]).reshape(-1, 1))
         blanks_array = scaler.transform(np.array([blanks]).reshape(-1, 1))
+
+        print(board_array.shape)
+        print(dimensions_array.shape)
+        print(blanks_array.shape)
 
         # Predict the Manhattan distance using the model
         manhattan_distance_estimate = model.predict(

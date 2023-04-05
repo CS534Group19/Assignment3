@@ -35,7 +35,7 @@ with open(f"{OUTPUT_DIR}\\data_03x03_1000_tests_NN.csv", "w", newline="") as dat
     data_writer = csv.writer(data_file)
     data_writer.writerow(["File Name", "Heuristic", "Weighted", "Nodes Expanded",
                         "Moves Required", "Solution Cost", "Estimated Branching Factor", "Search Time"])
-    for i in range(1000):
+    for i in range(1):
         new_board = Initialization(
             f"{BOARDS_DIR}\\03x03_board_{i}.csv", 3, heur, weight, model, scaler)
         # print(new_board.goal)
