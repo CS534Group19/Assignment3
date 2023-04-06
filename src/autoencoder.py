@@ -115,33 +115,33 @@ input_displaced_tiles = tf.keras.layers.Input(shape=(1,), name="input_displaced_
 concat_inputs = tf.keras.layers.Concatenate()(
     [input_manhattan_h_val, input_num_tiles, input_blanks, input_euclidean_h_val, input_displaced_tiles])
 
+encoding_dim = 3
 
-dense1 = tf.keras.layers.Dense(5, activation='linear')(concat_inputs)
-#tf.keras.layers.Dropout(rate = 0.33)
-dense2 = tf.keras.layers.Dense(4, activation='linear')(dense1)
-#tf.keras.layers.Dropout(rate = 0.33)
-dense3 = tf.keras.layers.Dense(3, activation='linear')(dense2)
-#tf.keras.layers.Dropout(rate = 0.33)
-dense4 = tf.keras.layers.Dense(2, activation='linear')(dense3)
-output = tf.keras.layers.Dense(1, activation='linear')(dense4)
+# Define the autoencoder model
+encoded = tf.keras.layers.Dense(encoding_dim, activation='relu')(concat_inputs)
+decoded = tf.keras.layers.Dense(5, activation='linear')(encoded)
 
-model = tf.keras.models.Model(inputs=[input_manhattan_h_val, input_num_tiles, input_blanks, input_euclidean_h_val,
-                                       input_displaced_tiles], outputs=output)
+autoencoder = tf.keras.models.Model(concat_inputs, decoded)
+encoder = tf.keras.models.Model(concat_inputs, encoded)
 
-# Compile the model
-model.compile(optimizer='adam', loss='mse', metrics = ['mae', 'mse'])
+autoencoder.compile(optimizer='adam', loss='mse')
 
-# Train the model
-history = model.fit([manhattan_h_val_train, num_tiles_train, blanks_train, euclidean_h_val_train, displaced_tiles_train], effort_train, 
-                    validation_data = ([manhattan_h_val_val, num_tiles_val, blanks_val, euclidean_h_val_val, displaced_tiles_val], effort_val),
-                    epochs=250, batch_size=32)
+input_data = np.column_stack([manhattan_h_val, num_tiles, blanks, euclidean_h_val, displaced_tiles])
+input_data_train, input_data_temp, effort_train, effort_temp = train_test_split(input_data, effort, test_size=0.2, random_state=42)
+input_data_val, input_data_test, effort_val, effort_test = train_test_split(input_data_temp, effort_temp, test_size=0.5, random_state=42)
 
-# Evaluate the model on the test set
-test_loss = model.evaluate([manhattan_h_val_test, num_tiles_test, blanks_test, euclidean_h_val_test, displaced_tiles_test], effort_test)
+# Train the autoencoder
+autoencoder_history = autoencoder.fit(input_data_train, input_data_train,
+                                      epochs=250,
+                                      batch_size=32,
+                                      shuffle=True,
+                                      validation_data=(input_data_val, input_data_val))
 
-prediction = model.predict([manhattan_h_val_test, num_tiles_test, blanks_test, euclidean_h_val_test, displaced_tiles_test])
-print(f"R^2 Value: {r2_score(effort_test, prediction)}")
+encoded_data_train = encoder.predict(input_data_train)
+encoded_data_val = encoder.predict(input_data_val)
+encoded_data_test = encoder.predict(input_data_test)
+
 
 # Save the model and scaler for future use
-model.save('n_puzzle_model.h5')
+autoencoder.save('n_puzzle_autoencoder.h5')
 #pickle.dump(scaler, open('scaler.pkl', 'wb'))
