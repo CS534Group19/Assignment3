@@ -89,20 +89,15 @@ class BoardState():
     def calc_nn_heuristic_for_board(self, num_tiles, blanks, manhattan_h_val, euclidean_h_val, displaced_tiles, model, scaler):
         # Preprocess the board
         # Normalize
-        board = self.flatten(board)
-        board_array = np.array([board]).astype(np.float32)
+        num_tiles = scaler.transform(np.array([num_tiles]).reshape(-1, 1))
+        blanks = scaler.transform(np.array([blanks]).reshape(-1, 1))
+        manhattan_h_val = scaler.transform(np.array([manhattan_h_val]).reshape(-1, 1))
+        euclidean_h_val = scaler.transform(np.array([euclidean_h_val]).reshape(-1, 1))
+        displaced_tiles = scaler.transform(np.array([displaced_tiles]).reshape(-1, 1))
 
-        # Preprocess dimensions and blanks
-        # dimensions_array = scaler.transform(
-        #     np.array([dimensions]).reshape(-1, 1))
-        # blanks_array = scaler.transform(np.array([blanks]).reshape(-1, 1))
-
-        # Predict the Manhattan distance using the model
-        manhattan_distance_estimate = model.predict(
-            [board_array, dimensions_array, blanks_array])[0][0]
-        print(manhattan_distance_estimate)
-
-        return manhattan_distance_estimate
+        effort_estimate = model.predict([num_tiles, blanks, manhattan_h_val, euclidean_h_val, displaced_tiles])[0][0]
+        print(effort_estimate)
+        return effort_estimate
 
     def getHVal(self, heuristic_type: str) -> int:
         if heuristic_type == "Sliding":
