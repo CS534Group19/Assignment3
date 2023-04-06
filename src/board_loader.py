@@ -67,4 +67,4 @@ with open(f"{PROCESSED_DIR}\\displaced_tiles.csv", "w", newline="") as file:
 with open(f"{PROCESSED_DIR}\\effort.csv", "w", newline="") as file:
     csv_writer = csv.writer(file, delimiter=",")
     for item in effort:
-        csv_writer.writerow([item])```
+        csv_writer.writerow([item])
