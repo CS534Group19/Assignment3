@@ -6,6 +6,7 @@ import tensorflow as tf
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
 import pickle
+from sklearn.metrics import r2_score
 
 Assignment3Dir = os.path.normpath(os.getcwd() + os.sep + os.pardir)
 BOARDS_DIR = f"{Assignment3Dir}\\documentation\\tagged_boards"
@@ -80,7 +81,7 @@ greedy_distances = np.array(greedy_distances)
 wrong_tiles = np.array(wrong_tiles)
 
 # Normalize the boards
-boards = boards.astype(np.float32) / (len(boards[0])-1)
+# boards = boards.astype(np.float32) / (len(boards[0])-1)
 
 scaler = MinMaxScaler()
 manhattan_distances = scaler.fit_transform(manhattan_distances.reshape(-1, 1))
@@ -108,16 +109,20 @@ input_wrong_tiles = tf.keras.layers.Input(shape=(1,), name="input_wrong_tiles")
 
 concat_inputs = tf.keras.layers.Concatenate()(
     [input_board, input_dimensions, input_blanks, input_euclidean_distances, input_greedy_distances, input_wrong_tiles])
-dense1 = tf.keras.layers.Dense(64, activation='relu')(concat_inputs)
-dense2 = tf.keras.layers.Dense(32, activation='relu')(dense1)
-dense3 = tf.keras.layers.Dense(16, activation='relu')(dense2)
-output = tf.keras.layers.Dense(1, activation='linear')(dense3)
+dense1 = tf.keras.layers.Dense(5, activation='linear')(concat_inputs)
+tf.keras.layers.Dropout(rate = 0.33)
+dense2 = tf.keras.layers.Dense(5, activation='linear')(dense1)
+tf.keras.layers.Dropout(rate = 0.33)
+dense3 = tf.keras.layers.Dense(3, activation='linear')(dense2)
+tf.keras.layers.Dropout(rate = 0.33)
+dense4 = tf.keras.layers.Dense(2, activation='linear')(dense3)
+output = tf.keras.layers.Dense(1, activation='linear')(dense4)
 
 model = tf.keras.models.Model(inputs=[input_board, input_dimensions, input_blanks, input_euclidean_distances,
                                        input_greedy_distances, input_wrong_tiles], outputs=output)
 
 # Compile the model
-model.compile(optimizer='adam', loss='mse')
+model.compile(optimizer='adam', loss='mse', metrics = ['mae', 'mse'])
 
 # Train the model
 history = model.fit([boards_train, dimensions_train, blanks_train, euclidean_distances_train, greedy_distances_train, wrong_tiles_train], manhattan_distances_train,
@@ -126,6 +131,9 @@ history = model.fit([boards_train, dimensions_train, blanks_train, euclidean_dis
 
 # Evaluate the model on the test set
 test_loss = model.evaluate([boards_test, dimensions_test, blanks_test, euclidean_distances_test, greedy_distances_test, wrong_tiles_test], manhattan_distances_test)
+
+prediction = model.predict([boards_test, dimensions_test, blanks_test, euclidean_distances_test, greedy_distances_test, wrong_tiles_test])
+print(f"R^2 Value: {r2_score(manhattan_distances_test, prediction)}")
 
 # Save the model and scaler for future use
 model.save('n_puzzle_model.h5')
