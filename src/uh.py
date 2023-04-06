@@ -53,7 +53,6 @@ def load_n_puzzle_dataset(dim):
 # Load the dataset (Replace this with your own dataset loading function)\
 boards, manhattan_distances, dimensions, blanks, euclidean_distances, greedy_distances, wrong_tiles = load_n_puzzle_dataset(3)
 
-scaler = StandardScaler().fit(np.array(dimensions).reshape(-1, 1))
 
 def flatten():
     # Flatten the boards
