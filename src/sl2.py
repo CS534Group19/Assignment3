@@ -50,7 +50,7 @@ def read_processed_data():
         csv_reader = csv.reader(file, delimiter=",")
         for row in csv_reader:
             for item in row:
-                euclidean_distances.append(float(item))
+                euclidean_distances.append(int(item))
 
     with open(f"{PROCESSED_DIR}\\greedy_distances.csv", "r") as file:
         csv_reader = csv.reader(file, delimiter=",")
