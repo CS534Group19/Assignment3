@@ -26,8 +26,13 @@ class Initialization():
         self.scaler = scaler
         self.front_goal = self.find_goal_state_front()
         self.back_goal = self.find_goal_state_back()
-        self.goal = self.calc_best_goal(self.heuristic_type)
+        if self.heuristic_type != "NN":
+            self.goal = self.calc_best_goal(self.heuristic_type)
+        else:
+            self.goal = self.calc_best_goal("Sliding")
         self.tiles_displaced = self.calc_tiles_displaced()
+        self.manhattan_h_val = self.getHVal("Sliding", self.goal)
+        self.euclidean_h_val = self.getHVal("Greedy", self.goal)
 
     def create_2D_board(self):
         board = []
@@ -142,21 +147,15 @@ class Initialization():
                     board_array[row][col], row, col, goal_state)
         return total
 
-    def flatten(self, board):
-        # Flatten the boards
-        board_array = [item for row in board for item in row]
-        return board_array
-
     def calc_nn_heuristic_for_board(self, num_tiles, blanks, manhattan_h_val, euclidean_h_val, displaced_tiles, model, scaler):
         # Preprocess the board
         # Normalize
-        num_tiles = scaler.transform(np.array([num_tiles]).reshape(-1, 1))
-        blanks = scaler.transform(np.array([blanks]).reshape(-1, 1))
-        manhattan_h_val = scaler.transform(np.array([manhattan_h_val]).reshape(-1, 1))
-        euclidean_h_val = scaler.transform(np.array([euclidean_h_val]).reshape(-1, 1))
-        displaced_tiles = scaler.transform(np.array([displaced_tiles]).reshape(-1, 1))
 
-        effort_estimate = model.predict([num_tiles, blanks, manhattan_h_val, euclidean_h_val, displaced_tiles])[0][0]
+        data = np.array(
+            [[num_tiles, blanks, manhattan_h_val, euclidean_h_val, displaced_tiles]])
+        scaled_data = self.scaler.transform(data)
+
+        effort_estimate = self.model.predict(scaled_data)
         print(effort_estimate)
         return effort_estimate
 
@@ -167,7 +166,7 @@ class Initialization():
             return self.calc_total_euclidean_for_board(self.board, goal_board)
         elif heuristic_type == "NN":
             # TODO: Use NN to determine heuristic
-            return self.calc_nn_heuristic_for_board(self.num_tiles, self.blanks, self.manhattan_h_val, self.euclidean_h_val, self.displaced_tiles, self.model, self.scaler)
+            return self.calc_nn_heuristic_for_board(self.num_tiles, self.blanks, self.manhattan_h_val, self.euclidean_h_val, self.tiles_displaced, self.model, self.scaler)
 
     def calc_best_goal(self, heuristic_type: str):
         back_h = self.getHVal(heuristic_type, self.back_goal)

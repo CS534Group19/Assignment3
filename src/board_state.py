@@ -89,13 +89,12 @@ class BoardState():
     def calc_nn_heuristic_for_board(self, num_tiles, blanks, manhattan_h_val, euclidean_h_val, displaced_tiles, model, scaler):
         # Preprocess the board
         # Normalize
-        num_tiles = scaler.transform(np.array([num_tiles]).reshape(-1, 1))
-        blanks = scaler.transform(np.array([blanks]).reshape(-1, 1))
-        manhattan_h_val = scaler.transform(np.array([manhattan_h_val]).reshape(-1, 1))
-        euclidean_h_val = scaler.transform(np.array([euclidean_h_val]).reshape(-1, 1))
-        displaced_tiles = scaler.transform(np.array([displaced_tiles]).reshape(-1, 1))
 
-        effort_estimate = model.predict([num_tiles, blanks, manhattan_h_val, euclidean_h_val, displaced_tiles])[0][0]
+        data = np.array(
+            [[num_tiles, blanks, manhattan_h_val, euclidean_h_val, displaced_tiles]])
+        scaled_data = self.scaler.transform(data)
+
+        effort_estimate = self.model.predict(scaled_data)
         print(effort_estimate)
         return effort_estimate
 

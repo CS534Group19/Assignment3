@@ -25,7 +25,8 @@ OUTPUT_DIR = f"{Assignment3Dir}\\documentation\\data"
 #         data_writer.writerow(
 #             ["3x3x2.csv", "Sliding", "True"] + astar.a_star(board_state))
 
-model = tf.keras.models.load_model('n_puzzle_model.h5')
+with open("linear_regression_model.pkl", "rb") as f:
+    model = pickle.load(f)
 with open('scaler.pkl', 'rb') as f:
     scaler = pickle.load(f)
 
@@ -40,6 +41,6 @@ with open(f"{OUTPUT_DIR}\\data_03x03_1000_tests_NN.csv", "w", newline="") as dat
             f"{BOARDS_DIR}\\03x03_board_{i}.csv", 3, heur, weight, model, scaler)
         # print(new_board.goal)
         board_state = BoardState(
-            new_board.board, new_board.goal, new_board.heuristic_type, new_board.weighted, new_board.blanks, new_board.model, new_board.scaler)
+            new_board.board, new_board.goal, new_board.heuristic_type, new_board.weighted, new_board.blanks, new_board.manhattan_h_val, new_board.euclidean_h_val, new_board.tiles_displaced, new_board.model, new_board.scaler)
         data_writer.writerow(
             [f"03x03_board_{i}.csv", heur, weight] + astar.a_star(board_state))
