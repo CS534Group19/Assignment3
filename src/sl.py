@@ -6,7 +6,9 @@ import numpy as np
 import tensorflow as tf
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
+from sklearn.metrics import r2_score
 import pickle
+import matplotlib.pyplot as plt
 
 Assignment3Dir = os.path.normpath(os.getcwd() + os.sep + os.pardir)
 BOARDS_DIR = f"{Assignment3Dir}\\documentation\\tagged_boards"
@@ -59,7 +61,7 @@ dimensions = np.array(dimensions)
 blanks = np.array(blanks)
 
 # Normalize the boards
-boards = boards.astype(np.float32) / (len(boards[0])-1)
+boards = boards.astype(np.float32)
 
 scaler = MinMaxScaler()
 manhattan_distances = scaler.fit_transform(manhattan_distances.reshape(-1, 1))
@@ -77,21 +79,35 @@ input_dimensions = tf.keras.layers.Input(shape=(1,), name="input_dimensions")
 input_blanks = tf.keras.layers.Input(shape=(1,), name="input_blanks")
 
 concat_inputs = tf.keras.layers.Concatenate()([input_board, input_dimensions, input_blanks])
-dense1 = tf.keras.layers.Dense(64, activation='relu')(concat_inputs)
-dense2 = tf.keras.layers.Dense(32, activation='relu')(dense1)
-dense3 = tf.keras.layers.Dense(16, activation='relu')(dense2)
+dense1 = tf.keras.layers.Dense(3, activation='linear')(concat_inputs)
+dense2 = tf.keras.layers.Dense(2, activation='linear')(dense1)
+dense3 = tf.keras.layers.Dense(3, activation='linear')(dense2)
 output = tf.keras.layers.Dense(1, activation='linear')(dense3)
 
 model = tf.keras.models.Model(inputs=[input_board, input_dimensions, input_blanks], outputs=output)
 
 # Compile the model
-model.compile(optimizer='adam', loss='mse')
+model.compile(optimizer='adam', loss='mse', metrics=['mae', 'mse'])
 
 # Train the model
 history = model.fit([boards_train, dimensions_train, blanks_train], manhattan_distances_train, validation_data=([boards_val, dimensions_val, blanks_val], manhattan_distances_val), epochs=100, batch_size=32)
 
 # Evaluate the model on the test set
 test_loss = model.evaluate([boards_test, dimensions_test, blanks_test], manhattan_distances_test)
+print(f"MSE: {test_loss[1]}")
+print(f"MAE: {test_loss[2]}")
+
+
+prediction = model.predict([boards_test, dimensions_test, blanks_test])
+
+print(f"R^2 Value: {r2_score(manhattan_distances_test, prediction)}")
+
+
+plt.plot(history.history['mae'], label='mae')
+plt.plot(history.history['val_mae'], label='val_mae')
+
+plt.legend()
+plt.show()
 
 # Save the model and scaler for future use
 model.save('n_puzzle_model.h5')
