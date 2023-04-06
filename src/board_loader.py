@@ -37,7 +37,7 @@ def load_n_puzzle_dataset(dim):
     return num_tiles, blanks, manhattan_h_val, euclidean_h_val, displaced_tiles, effort
 
 # Load the dataset (Replace this with your own dataset loading function)\
-num_tiles, blanks, manhattan_h_val, euclidean_h_val, displaced_tiles, effort = load_n_puzzle_dataset(3)
+num_tiles, blanks, manhattan_h_val, euclidean_h_val, displaced_tiles, effort = load_n_puzzle_dataset(4)
 
 with open(f"{PROCESSED_DIR}\\num_tiles.csv", "w", newline="") as file:
     csv_writer = csv.writer(file, delimiter=",")
