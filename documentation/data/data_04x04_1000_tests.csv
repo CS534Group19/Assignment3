@@ -1,5 +1,0 @@
-File Name,Heuristic,Weighted,Nodes Expanded,Moves Required,Solution Cost,Estimated Branching Factor,Search Time
-04x04_board_0.csv,Sliding,True,9370,58,371,1.3707445808911534,181.9015422000084
-04x04_board_1.csv,Sliding,True,18,14,80,1.511209390509403,0.006844500021543354
-04x04_board_2.csv,Sliding,True,2412,50,410,1.3655106514635194,7.629295499995351
-04x04_board_3.csv,Sliding,True,18,18,150,1.3787157053417285,0.0052355999941937625
