@@ -115,11 +115,11 @@ input_displaced_tiles = tf.keras.layers.Input(shape=(1,), name="input_displaced_
 concat_inputs = tf.keras.layers.Concatenate()(
     [input_manhattan_h_val, input_num_tiles, input_blanks, input_euclidean_h_val, input_displaced_tiles])
 
-encoding_dim = 3
+encoding_dim = 4
 
 # Define the autoencoder model
 encoded = tf.keras.layers.Dense(encoding_dim, activation='relu')(concat_inputs)
-decoded = tf.keras.layers.Dense(5, activation='linear')(encoded)
+decoded = tf.keras.layers.Dense(5, activation='sigmoid')(encoded)
 
 autoencoder = tf.keras.models.Model(concat_inputs, decoded)
 encoder = tf.keras.models.Model(concat_inputs, encoded)
@@ -138,25 +138,22 @@ autoencoder_history = autoencoder.fit(input_data_train, input_data_train,
                                       validation_data=(input_data_val, input_data_val))
 
 encoded_data_train = encoder.predict(input_data_train)
-encoded_data_val = encoder.predict(input_data_val)
-encoded_data_test = encoder.predict(input_data_test)
-
 
 # Save the model and scaler for future use
 autoencoder.save('n_puzzle_autoencoder.h5')
 #pickle.dump(scaler, open('scaler.pkl', 'wb'))
 
-encoding_dim = 3
+encoding_dim = 4
 input_encoded = tf.keras.layers.Input(shape=(encoding_dim,), name="input_encoded")
 
 
-dense1 = tf.keras.layers.Dense(3, activation='linear')(input_encoded)
+dense1 = tf.keras.layers.Dense(4, activation='linear')(input_encoded)
 #tf.keras.layers.Dropout(rate = 0.33)
-dense2 = tf.keras.layers.Dense(4, activation='linear')(dense1)
+#dense2 = tf.keras.layers.Dense(4, activation='linear')(dense1)
 #tf.keras.layers.Dropout(rate = 0.33)
 dense3 = tf.keras.layers.Dense(3, activation='linear')(dense1)
 #tf.keras.layers.Dropout(rate = 0.33)
-dense4 = tf.keras.layers.Dense(2, activation='linear')(dense1)
+dense4 = tf.keras.layers.Dense(2, activation='linear')(dense3)
 output = tf.keras.layers.Dense(1, activation='linear')(dense4)
 
 model = tf.keras.models.Model(inputs=input_encoded, outputs=output)
