@@ -127,14 +127,14 @@ input_displaced_tiles = tf.keras.layers.Input(shape=(1,), name="input_displaced_
 
 concat_inputs = tf.keras.layers.Concatenate()(
     [input_manhattan_h_val, input_num_tiles, input_blanks, input_euclidean_h_val, input_displaced_tiles])
-dense1 = tf.keras.layers.Dense(5, activation='linear')(concat_inputs)
+dense1 = tf.keras.layers.Dense(3, activation='linear')(concat_inputs)
 # tf.keras.layers.Dropout(rate = 0.33)
-dense2 = tf.keras.layers.Dense(4, activation='linear')(dense1)
+#dense2 = tf.keras.layers.Dense(4, activation='linear')(dense1)
 # tf.keras.layers.Dropout(rate = 0.33)
-dense3 = tf.keras.layers.Dense(3, activation='linear')(dense2)
+#dense3 = tf.keras.layers.Dense(3, activation='linear')(dense2)
 # tf.keras.layers.Dropout(rate = 0.33)
-dense4 = tf.keras.layers.Dense(2, activation='linear')(dense3)
-output = tf.keras.layers.Dense(1, activation='linear')(dense4)
+#dense4 = tf.keras.layers.Dense(2, activation='linear')(dense1)
+output = tf.keras.layers.Dense(1, activation='linear')(dense1)
 
 model = tf.keras.models.Model(inputs=[input_manhattan_h_val, input_num_tiles, input_blanks, input_euclidean_h_val,
                                        input_displaced_tiles], outputs=output)
@@ -145,7 +145,7 @@ model.compile(optimizer='adam', loss= custom_loss, metrics = ['mae', 'mse'])
 # Train the model
 history = model.fit([manhattan_h_val_train, num_tiles_train, blanks_train, euclidean_h_val_train, displaced_tiles_train], effort_train, 
                     validation_data = ([manhattan_h_val_val, num_tiles_val, blanks_val, euclidean_h_val_val, displaced_tiles_val], effort_val),
-                    epochs=200, batch_size=8)
+                    epochs=75, batch_size=64)
 
 # Evaluate the model on the test set
 test_loss = model.evaluate([manhattan_h_val_test, num_tiles_test, blanks_test, euclidean_h_val_test, displaced_tiles_test], effort_test)

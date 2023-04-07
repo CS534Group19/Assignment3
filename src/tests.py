@@ -11,7 +11,7 @@ import tensorflow as tf
 import pickle
 
 Assignment3Dir = os.path.normpath(os.getcwd() + os.sep + os.pardir)
-BOARDS_DIR = f"{Assignment3Dir}\\documentation\\4Boards"
+BOARDS_DIR = f"{Assignment3Dir}\\documentation\\3Boards"
 OUTPUT_DIR = f"{Assignment3Dir}\\documentation\\data"
 DOCUMENTATION_DIR = f"{Assignment3Dir}\\documentation"
 
@@ -133,7 +133,7 @@ def run_board(board_file, board_size, heuristic, weighted, model_type=None):
 
 
 ## Analysis 1
-with open(f"{OUTPUT_DIR}\\TEST4x4_manhattan_learned_hvals.csv", "w", newline="") as data_file:
+with open(f"{OUTPUT_DIR}\\3x3_manhattan_learned_hvals.csv", "w", newline="") as data_file:
     heuristic = "Learned"
     weighted = True
     model, scaler = load_model(heuristic)
@@ -141,17 +141,17 @@ with open(f"{OUTPUT_DIR}\\TEST4x4_manhattan_learned_hvals.csv", "w", newline="")
     data_writer = csv.writer(data_file)
     data_writer.writerow(["File Name", "Effort", "Manhattan H", "Learned H"])
 
-    board_size = 4
+    board_size = 3
     random_board_numbers = get_random_board_numbers(20)
 
     for board_num in random_board_numbers:
         new_board = Initialization(
-            f"{BOARDS_DIR}\\04x04_board_{board_num}.csv", board_size, heuristic, weighted, model, scaler)
+            f"{BOARDS_DIR}\\03x03_board_{board_num}.csv", board_size, heuristic, weighted, model, scaler)
         board_state = BoardState(
             new_board.board, new_board.goal, new_board.heuristic_type, new_board.weighted, new_board.blanks, new_board.manhattan_h_val, new_board.euclidean_h_val, new_board.tiles_displaced, new_board.model, new_board.scaler)
 
         effort = 0
-        with open(f"{BOARDS_DIR}\\04x04_board_{board_num}.csv", "r") as f:
+        with open(f"{BOARDS_DIR}\\03x03_board_{board_num}.csv", "r") as f:
             csv_reader = csv.reader(f)
             board_data = list(csv_reader)
             effort = board_data[-1][0]
@@ -163,7 +163,7 @@ with open(f"{OUTPUT_DIR}\\TEST4x4_manhattan_learned_hvals.csv", "w", newline="")
                                                 board_state.manhattan_h_val, board_state.euclidean_h_val, board_state.displaced_tiles)
 
         data_writer.writerow(
-            [f"04x04_board_{board_num}.csv", effort, manhattan_h, learned_h])
+            [f"03x03_board_{board_num}.csv", effort, manhattan_h, learned_h])
 
 ## Analysis 2
 # Mike, Jeff
