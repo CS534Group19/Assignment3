@@ -109,7 +109,7 @@ class BoardState():
             return self.calc_total_manhattan_for_board(self.board_array)
         elif heuristic_type == "Greedy":
             return self.calc_total_euclidean_for_board(self.board_array)
-        elif heuristic_type == "NN":
+        elif heuristic_type == "Learned":
             # TODO: Use NN to determine heuristic
             return self.calc_nn_heuristic_for_board(self.num_tiles, self.blanks, self.manhattan_h_val, self.euclidean_h_val, self.displaced_tiles)
 

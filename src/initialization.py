@@ -26,7 +26,7 @@ class Initialization():
         self.scaler = scaler
         self.front_goal = self.find_goal_state_front()
         self.back_goal = self.find_goal_state_back()
-        if self.heuristic_type != "NN":
+        if self.heuristic_type != "Learned":
             self.goal = self.calc_best_goal(self.heuristic_type)
         else:
             self.goal = self.calc_best_goal("Sliding")
@@ -174,7 +174,7 @@ class Initialization():
             return self.calc_total_manhattan_for_board(self.board, goal_board)
         elif heuristic_type == "Greedy":
             return self.calc_total_euclidean_for_board(self.board, goal_board)
-        elif heuristic_type == "NN":
+        elif heuristic_type == "Learned":
             # TODO: Use NN to determine heuristic
             return self.calc_nn_heuristic_for_board(self.num_tiles, self.blanks, self.manhattan_h_val, self.euclidean_h_val, self.tiles_displaced)
 

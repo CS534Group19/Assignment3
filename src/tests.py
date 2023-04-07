@@ -11,38 +11,35 @@ import tensorflow as tf
 import pickle
 
 Assignment3Dir = os.path.normpath(os.getcwd() + os.sep + os.pardir)
-BOARDS_DIR = f"{Assignment3Dir}\\documentation\\3Boards"
+BOARDS_DIR = f"{Assignment3Dir}\\documentation\\4Boards"
 OUTPUT_DIR = f"{Assignment3Dir}\\documentation\\data"
 DOCUMENTATION_DIR = f"{Assignment3Dir}\\documentation"
 
 
-def load_model(heuristic_type, model_type):
-    if heuristic_type == "NN":
-        if model_type == "Linear":
-            with open("linear_regression_model.pkl", "rb") as f:
-                model = pickle.load(f)
-            with open('scaler_linear.pkl', 'rb') as f:
-                scaler = pickle.load(f)
-        elif model_type == "Dense":
-            def custom_loss(y_true, y_pred):
-                # Calculate the difference between the true and predicted values
-                diff = y_pred - y_true
+def load_model(heuristic_type):
+    if heuristic_type == "Learned":
+        # if model_type == "Linear":
+        #     with open("linear_regression_model.pkl", "rb") as f:
+        #         model = pickle.load(f)
+        #     with open('scaler_linear.pkl', 'rb') as f:
+        #         scaler = pickle.load(f)
+        # elif model_type == "Dense":
+        def custom_loss(y_true, y_pred):
+            # Calculate the difference between the true and predicted values
+            diff = y_pred - y_true
 
-                # Set a penalty factor for overestimation
-                penalty_factor = 1.05
+            # Set a penalty factor for overestimation
+            penalty_factor = 1.05
 
-                # Apply the penalty factor to the positive differences (overestimation)
-                diff_penalty = tf.where(diff > 0, diff * penalty_factor, diff)
+            # Apply the penalty factor to the positive differences (overestimation)
+            diff_penalty = tf.where(diff > 0, diff * penalty_factor, diff)
 
-                # Calculate the mean squared error with the penalized differences
-                loss = tf.square(diff_penalty)
-                return tf.reduce_mean(loss)
-            model = tf.keras.models.load_model('n_puzzle_model.h5', custom_objects={
-                                               'custom_loss': custom_loss})
-            scaler = None
-        else:
-            model = None
-            scaler = None
+            # Calculate the mean squared error with the penalized differences
+            loss = tf.square(diff_penalty)
+            return tf.reduce_mean(loss)
+        model = tf.keras.models.load_model('n_puzzle_model.h5', custom_objects={
+                                            'custom_loss': custom_loss})
+        scaler = None
     else:
         model = None
         scaler = None
@@ -67,7 +64,7 @@ def run_board(board_file, board_size, heuristic, weighted, model_type=None):
     - weighted: whether or not to use weighted A*, either True or False
     - model_type: the type of model to use, either "Linear" or "Dense"
     """
-    model, scaler = load_model(heuristic, model_type)
+    model, scaler = load_model(heuristic)
 
     new_board = Initialization(
         board_file, board_size, heuristic, weighted, model, scaler)
@@ -76,8 +73,8 @@ def run_board(board_file, board_size, heuristic, weighted, model_type=None):
     return astar.a_star(board_state)
 
 
-run_board(
-    f"{DOCUMENTATION_DIR}\\test_boards\\6x6x2.csv", 6, "NN", False, "Dense")
+# run_board(
+#     f"{DOCUMENTATION_DIR}\\4Boards\\04x04_board_0.csv", 4, "NN", False, "Dense")
 
 # run_board(
 #     f"{DOCUMENTATION_DIR}\\3Boards\\03x03_board_0.csv", 3, "NN", False, "Linear")
@@ -133,3 +130,43 @@ run_board(
 
 #         data_writer.writerow(
 #             [f"03x03_board_{board_num}.csv", sliding_time, nn_time])
+
+
+## Analysis 1
+with open(f"{OUTPUT_DIR}\\TEST4x4_manhattan_learned_hvals.csv", "w", newline="") as data_file:
+    heuristic = "Learned"
+    weighted = True
+    model, scaler = load_model(heuristic)
+
+    data_writer = csv.writer(data_file)
+    data_writer.writerow(["File Name", "Effort", "Manhattan H", "Learned H"])
+
+    board_size = 4
+    random_board_numbers = get_random_board_numbers(20)
+
+    for board_num in random_board_numbers:
+        new_board = Initialization(
+            f"{BOARDS_DIR}\\04x04_board_{board_num}.csv", board_size, heuristic, weighted, model, scaler)
+        board_state = BoardState(
+            new_board.board, new_board.goal, new_board.heuristic_type, new_board.weighted, new_board.blanks, new_board.manhattan_h_val, new_board.euclidean_h_val, new_board.tiles_displaced, new_board.model, new_board.scaler)
+
+        effort = 0
+        with open(f"{BOARDS_DIR}\\04x04_board_{board_num}.csv", "r") as f:
+            csv_reader = csv.reader(f)
+            board_data = list(csv_reader)
+            effort = board_data[-1][0]
+
+        manhattan_h = board_state.calc_total_manhattan_for_board(board_state.board_array)
+
+        board_state.model = model
+        learned_h = board_state.calc_nn_heuristic_for_board(board_state.num_tiles, board_state.blanks,
+                                                board_state.manhattan_h_val, board_state.euclidean_h_val, board_state.displaced_tiles)
+
+        data_writer.writerow(
+            [f"04x04_board_{board_num}.csv", effort, manhattan_h, learned_h])
+
+## Analysis 2
+# Mike, Jeff
+
+## Analysis 3
+# Done

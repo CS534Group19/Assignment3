@@ -3,6 +3,9 @@ from board_state import BoardState
 import time
 import sys
 
+import tensorflow as tf
+import csv
+
 
 def a_star(board_state):
     open = [board_state]
@@ -60,7 +63,40 @@ if __name__ == "__main__":
     HEURISTIC = sys.argv[2]
     WEIGHTED = sys.argv[3]
 
-    new_board = Initialization(FILE_NAME)
-    board_state = BoardState(new_board.board, new_board.goal, HEURISTIC, WEIGHTED)
+    if HEURISTIC == "Learned":
+        def custom_loss(y_true, y_pred):
+            # Calculate the difference between the true and predicted values
+            diff = y_pred - y_true
+
+            # Set a penalty factor for overestimation
+            penalty_factor = 1.05
+
+            # Apply the penalty factor to the positive differences (overestimation)
+            diff_penalty = tf.where(diff > 0, diff * penalty_factor, diff)
+
+            # Calculate the mean squared error with the penalized differences
+            loss = tf.square(diff_penalty)
+            return tf.reduce_mean(loss)
+        model = tf.keras.models.load_model('n_puzzle_model.h5', custom_objects={
+            'custom_loss': custom_loss})
+        scaler = None
+    else:
+        model = None
+        scaler = None
+
+    def get_sidelength(board_file):
+        size = 0
+        with open(board_file, "r") as f:
+            csv_reader = csv.reader(f, delimiter=",")
+            for row in csv_reader:
+                size += 1
+        return size
+
+    sidelength = get_sidelength(FILE_NAME)
+
+    new_board = Initialization(
+        FILE_NAME, sidelength, HEURISTIC, WEIGHTED, model, scaler)
+    board_state = BoardState(
+        new_board.board, new_board.goal, new_board.heuristic_type, new_board.weighted, new_board.blanks, new_board.manhattan_h_val, new_board.euclidean_h_val, new_board.tiles_displaced, new_board.model, new_board.scaler)
 
     a_star(board_state)
