@@ -81,11 +81,11 @@ X_train_scaled = scaler.fit_transform(X_train)
 X_test_scaled = scaler.transform(X_test)
 
 # Save the scaler
-with open("scaler.pkl", "wb") as scaler_file:
+with open("scaler_linear.pkl", "wb") as scaler_file:
     pickle.dump(scaler, scaler_file)
 
 # Load the saved scaler
-with open("scaler.pkl", "rb") as scaler_file:
+with open("scaler_linear.pkl", "rb") as scaler_file:
     loaded_scaler = pickle.load(scaler_file)
 
 # Apply the loaded scaler to the test data

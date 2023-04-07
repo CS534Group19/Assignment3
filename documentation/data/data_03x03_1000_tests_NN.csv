@@ -1,2 +1,2 @@
 File Name,Heuristic,Weighted,Nodes Expanded,Moves Required,Solution Cost,Estimated Branching Factor,Search Time
-03x03_board_0.csv,NN,False,1271,12,61,3.291225140305772,2.0502512000093702
+03x03_board_0.csv,NN,False,66,12,61,2.0102835672168715,0.03068489998986479

@@ -147,17 +147,27 @@ class Initialization():
                     board_array[row][col], row, col, goal_state)
         return total
 
-    def calc_nn_heuristic_for_board(self, num_tiles, blanks, manhattan_h_val, euclidean_h_val, displaced_tiles, model, scaler):
+    def calc_nn_heuristic_for_board(self, num_tiles, blanks, manhattan_h_val, euclidean_h_val, displaced_tiles):
         # Preprocess the board
         # Normalize
 
-        data = np.array(
-            [[num_tiles, blanks, manhattan_h_val, euclidean_h_val, displaced_tiles]])
-        scaled_data = self.scaler.transform(data)
+        if self.scaler is not None:
+            data = np.array(
+                [[num_tiles, blanks, manhattan_h_val, euclidean_h_val, displaced_tiles]])
+            scaled_data = self.scaler.transform(data)
+            effort_estimate = self.model.predict(scaled_data)
 
-        effort_estimate = self.model.predict(scaled_data)
-        print(effort_estimate)
-        return effort_estimate
+            print(effort_estimate[0])
+            return effort_estimate[0]
+        else:
+            data = np.array([[manhattan_h_val, num_tiles, blanks,
+                             euclidean_h_val, displaced_tiles]])
+            input_data = [data[:, 0], data[:, 1],
+                          data[:, 2], data[:, 3], data[:, 4]]
+            effort_estimate = self.model.predict(input_data)
+
+            print(effort_estimate[0][0])
+            return effort_estimate[0][0]
 
     def getHVal(self, heuristic_type: str, goal_board) -> int:
         if heuristic_type == "Sliding":
@@ -166,7 +176,7 @@ class Initialization():
             return self.calc_total_euclidean_for_board(self.board, goal_board)
         elif heuristic_type == "NN":
             # TODO: Use NN to determine heuristic
-            return self.calc_nn_heuristic_for_board(self.num_tiles, self.blanks, self.manhattan_h_val, self.euclidean_h_val, self.tiles_displaced, self.model, self.scaler)
+            return self.calc_nn_heuristic_for_board(self.num_tiles, self.blanks, self.manhattan_h_val, self.euclidean_h_val, self.tiles_displaced)
 
     def calc_best_goal(self, heuristic_type: str):
         back_h = self.getHVal(heuristic_type, self.back_goal)
