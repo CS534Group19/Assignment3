@@ -84,6 +84,11 @@ euclidean_h_val = np.array(euclidean_h_val)
 displaced_tiles = np.array(displaced_tiles)
 effort = np.array(effort)
 
+k_folds = 5
+
+#Initialize the KFold object
+kf = KFold(n_splits=k_folds, shuffle=True, random_state=42)
+
 # Normalize the boards
 # boards = boards.astype(np.float32) / (len(boards[0])-1)
 
@@ -141,6 +146,44 @@ model = tf.keras.models.Model(inputs=[input_manhattan_h_val, input_num_tiles, in
 
 # Compile the model
 model.compile(optimizer='adam', loss= custom_loss, metrics = ['mae', 'mse'])
+
+test_loss = []
+r2_scores = []
+
+for fold, (train_indices, val_indices) in enumerate(kf.split(manhattan_h_val)):
+    print(f"Fold {fold+1}")
+    
+    # Split the data into training and validation sets for this fold
+    manhattan_h_val_train, manhattan_h_val_val = manhattan_h_val[train_indices], manhattan_h_val[val_indices]
+    num_tiles_train, num_tiles_val = num_tiles[train_indices], num_tiles[val_indices]
+    blanks_train, blanks_val = blanks[train_indices], blanks[val_indices]
+    euclidean_h_val_train, euclidean_h_val_val = euclidean_h_val[train_indices], euclidean_h_val[val_indices]
+    displaced_tiles_train, displaced_tiles_val = displaced_tiles[train_indices], displaced_tiles[val_indices]
+    effort_train, effort_val = effort[train_indices], effort[val_indices]
+    
+    # Train the model on the training set for this fold
+    history = model.fit([manhattan_h_val_train, num_tiles_train, blanks_train, euclidean_h_val_train, displaced_tiles_train], effort_train, 
+                        validation_data = ([manhattan_h_val_val, num_tiles_val, blanks_val, euclidean_h_val_val, displaced_tiles_val], effort_val),
+                        epochs=200, batch_size=8, verbose=0)
+    
+    # Evaluate the model on the test set for this fold
+    fold_test_loss = model.evaluate([manhattan_h_val_val, num_tiles_val, blanks_val, euclidean_h_val_val, displaced_tiles_val], effort_val, verbose=0)
+    test_loss.append(fold_test_loss)
+    prediction = model.predict([manhattan_h_val_val, num_tiles_val, blanks_val, euclidean_h_val_val, displaced_tiles_val])
+
+    fold_r2_score = r2_score(effort_val, prediction)
+    r2_scores.append(r2_score(effort_val, prediction))
+    
+    print(f"Fold {fold+1} - Test Loss: {fold_test_loss[0]:.4f} - R^2 Score: {fold_r2_score:.4f}")
+    print()
+
+# Print the mean and standard deviation of the evaluation results across all folds
+print(f"Mean Test Loss: {np.mean(test_loss):.4f} - Std Dev Test Loss: {np.std(test_loss):.4f}")
+print(f"Mean R^2 Score: {np.mean(r2_scores):.4f} - Std Dev R^2 Score: {np.std(r2_scores):.4f}")
+
+# Save the model for future use
+model.save('n_puzzle_model_cross.h5')
+          
 
 # Train the model
 history = model.fit([manhattan_h_val_train, num_tiles_train, blanks_train, euclidean_h_val_train, displaced_tiles_train], effort_train, 
