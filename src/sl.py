@@ -88,35 +88,14 @@ effort = np.array(effort)
 #     manhattan_h_val_temp, num_tiles_temp, blanks_temp, euclidean_h_val_temp, displaced_tiles_temp,
 #     test_size=0.5, random_state=42)
 
-manhattan_h_val_train,  manhattan_h_val_temp,   \
-num_tiles_train,        num_tiles_temp,         \
-blanks_train,           blanks_temp,            \
-euclidean_h_val_train,  euclidean_h_val_temp,   \
-displaced_tiles_train,  displaced_tiles_temp,   \
-effort_train,           effort_temp =           \
-train_test_split(manhattan_h_val, num_tiles, blanks, euclidean_h_val, displaced_tiles, effort, test_size=0.2, random_state=42) 
 
-manhattan_h_val_val,    manhattan_h_val_test,   \
-num_tiles_val,          num_tiles_test,         \
-blanks_val,             blanks_test,            \
-euclidean_h_val_val,    euclidean_h_val_test,   \
-displaced_tiles_val,    displaced_tiles_test,   \
-effort_val,             effort_test =           \
-train_test_split(manhattan_h_val_temp, num_tiles_temp, blanks_temp, euclidean_h_val_temp, displaced_tiles_temp, effort_temp, test_size=0.5, random_state=42)
 
 # Define the neural network architecture using the functional API
-input_manhattan_h_val = tf.keras.layers.Input(shape=(1,), name="input_manhattan_h_val")
-input_num_tiles = tf.keras.layers.Input(shape=(1,), name="input_num_tiles")
-input_blanks = tf.keras.layers.Input(shape=(1,), name="input_blanks")
-input_euclidean_h_val = tf.keras.layers.Input(shape=(1,), name="input_euclidean_h_val")
-input_displaced_tiles = tf.keras.layers.Input(shape=(1,), name="input_displaced_tiles")
+encoding_dim = 4
+input_encoded = tf.keras.layers.Input(shape=(encoding_dim,), name="input_encoded")
 
 
-concat_inputs = tf.keras.layers.Concatenate()(
-    [input_manhattan_h_val, input_num_tiles, input_blanks, input_euclidean_h_val, input_displaced_tiles])
-
-
-dense1 = tf.keras.layers.Dense(5, activation='linear')(concat_inputs)
+dense1 = tf.keras.layers.Dense(5, activation='linear')(input_encoded)
 #tf.keras.layers.Dropout(rate = 0.33)
 dense2 = tf.keras.layers.Dense(4, activation='linear')(dense1)
 #tf.keras.layers.Dropout(rate = 0.33)
@@ -125,15 +104,14 @@ dense3 = tf.keras.layers.Dense(3, activation='linear')(dense2)
 dense4 = tf.keras.layers.Dense(2, activation='linear')(dense3)
 output = tf.keras.layers.Dense(1, activation='linear')(dense4)
 
-model = tf.keras.models.Model(inputs=[input_manhattan_h_val, input_num_tiles, input_blanks, input_euclidean_h_val,
-                                       input_displaced_tiles], outputs=output)
+model = tf.keras.models.Model(inputs=input_encoded, outputs=output)
 
 # Compile the model
 model.compile(optimizer='adam', loss='mse', metrics = ['mae', 'mse'])
 
 # Train the model
-history = model.fit([manhattan_h_val_train, num_tiles_train, blanks_train, euclidean_h_val_train, displaced_tiles_train], effort_train, 
-                    validation_data = ([manhattan_h_val_val, num_tiles_val, blanks_val, euclidean_h_val_val, displaced_tiles_val], effort_val),
+history = model.fit(encoded_data_train, effort_train,
+                    validation_data=(encoded_data_val, effort_val),
                     epochs=250, batch_size=32)
 
 # Evaluate the model on the test set

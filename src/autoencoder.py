@@ -145,3 +145,35 @@ encoded_data_test = encoder.predict(input_data_test)
 # Save the model and scaler for future use
 autoencoder.save('n_puzzle_autoencoder.h5')
 #pickle.dump(scaler, open('scaler.pkl', 'wb'))
+
+encoding_dim = 3
+input_encoded = tf.keras.layers.Input(shape=(encoding_dim,), name="input_encoded")
+
+
+dense1 = tf.keras.layers.Dense(3, activation='linear')(input_encoded)
+#tf.keras.layers.Dropout(rate = 0.33)
+dense2 = tf.keras.layers.Dense(4, activation='linear')(dense1)
+#tf.keras.layers.Dropout(rate = 0.33)
+dense3 = tf.keras.layers.Dense(3, activation='linear')(dense1)
+#tf.keras.layers.Dropout(rate = 0.33)
+dense4 = tf.keras.layers.Dense(2, activation='linear')(dense1)
+output = tf.keras.layers.Dense(1, activation='linear')(dense4)
+
+model = tf.keras.models.Model(inputs=input_encoded, outputs=output)
+
+# Compile the model
+model.compile(optimizer='adam', loss='mse', metrics = ['mae', 'mse'])
+
+# Train the model
+history = model.fit(encoded_data_train, effort_train,
+                    validation_data=(encoded_data_val, effort_val),
+                    epochs=250, batch_size=32)
+
+# Evaluate the model on the test set
+test_loss = model.evaluate(encoded_data_test, effort_test)
+
+prediction = model.predict(encoded_data_test)
+print(f"R^2 Value: {r2_score(effort_test, prediction)}")
+
+# Save the model and scaler for future use
+model.save('n_puzzle_model.h5')
